@@ -1,17 +1,15 @@
 var express = require('express');
 var router = express.Router();
-var { client } = require('../db'); // Import the MongoDB client.
+var User = require('../models/User'); // Import the User model.
+
 /* GET users listing. */
+
 router.get('/', async function(req, res, next) {
   try {
-    const db = client.db(process.env.DATABASE_NAME)
-    const usersCollection = db.collection('users');
-    const users = await usersCollection.find({}).toArray();
-    
+    const users = await User.find({});
     res.json(users);
-    
   } catch (err) {
-    next(err);    
+    next(err);
   }
 });
 

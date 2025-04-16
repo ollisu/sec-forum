@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/AuthPage.css";
+import axios from 'axios';
+
+//axios.defaults.baseURL = import.meta.env.VITE_BASE_URL;
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
-  const [formData, setFormData] = useState({ username: "", password: "" });
+  const [formData, setFormData] = useState({ username: "", email: "", password: "", firstname: "", lastname: "" });
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -28,15 +31,22 @@ const AuthPage = () => {
         console.log("Invalid credentials");
       }
     } else {
-      // Sign up logic - write to local storage
-      if (users.some((u) => u.username === formData.username)) {
-        console.log("Username already exists");
-      } else {
-        users.push(formData);
-        localStorage.setItem("users", JSON.stringify(users));
-        console.log("User registered successfully");
-        setIsLogin(true);
-      }
+      // Sign up logic - write to MONGODB
+      axios.post('/auth/signup', {
+        username: formData.username,
+        firstname: formData.firstname,
+        lastname: formData.lastname,
+        email: formData.email,
+        password: formData.password,
+
+      })
+      .then(function (response) {
+        console.log(response);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+
     }
   };
 
@@ -55,6 +65,33 @@ const AuthPage = () => {
             onChange={handleChange}
             required
           />
+          {!isLogin && (
+            <>
+              <input
+               type="text"
+               name="firstname"
+               placeholder="First name"
+               value={formData.firstname}
+               onChange={handleChange}
+               required
+              />
+              <input
+               type="text"
+               name="lastname"
+               placeholder="Last name"
+               value={formData.lastname}
+               onChange={handleChange}
+               required
+              />
+              <input
+               type="email"
+               name="email"
+               placeholder="Email"
+               value={formData.email}
+               onChange={handleChange}
+               required
+              />
+          </>)}
           <input
             type="password"
             name="password"
