@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
 
     proxy: {
-      '/auth/signup': 'http://localhost:3000',
+      '/auth': 'http://localhost:3000',
     }
 
   },

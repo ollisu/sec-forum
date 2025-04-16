@@ -20,16 +20,16 @@ const AuthPage = () => {
     const users = JSON.parse(localStorage.getItem("users")) || [];
 
     if (isLogin) {
-      // Check if user exists in local storage
-      const user = users.find(
-        (u) => u.username === formData.username && u.password === formData.password
-      );
-      if (user) {
-        console.log("Login successful");
-        navigate("/dashboard");
-      } else {
-        console.log("Invalid credentials");
-      }
+      axios.post('/auth/login', {
+        username: formData.username,
+        password: formData.password,
+      }).then(function (response) {
+        navigate('/dashboard')
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+
     } else {
       // Sign up logic - write to MONGODB
       axios.post('/auth/signup', {
@@ -42,6 +42,7 @@ const AuthPage = () => {
       })
       .then(function (response) {
         console.log(response);
+        setIsLogin(true);
       })
       .catch(function (error) {
         console.log(error);
