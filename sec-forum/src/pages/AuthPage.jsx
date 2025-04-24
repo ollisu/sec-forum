@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "./AuthProvider";
 import "../styles/AuthPage.css";
 import axios from 'axios';
 
@@ -9,6 +10,7 @@ const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({ username: "", email: "", password: "", firstname: "", lastname: "" });
   const navigate = useNavigate();
+  const { setIsLoggedIn } = useAuth();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -24,6 +26,7 @@ const AuthPage = () => {
         username: formData.username,
         password: formData.password,
       }).then(function (response) {
+        setIsLoggedIn(true);
         navigate('/dashboard')
       })
       .catch(function (error) {
