@@ -10,7 +10,7 @@ const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({ username: "", email: "", password: "", firstname: "", lastname: "" });
   const navigate = useNavigate();
-  const { setIsLoggedIn } = useAuth();
+  const { handleLogin } = useAuth();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -19,18 +19,16 @@ const AuthPage = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const users = JSON.parse(localStorage.getItem("users")) || [];
-
     if (isLogin) {
       axios.post('/auth/login', {
         username: formData.username,
         password: formData.password,
       }).then(function (response) {
-        setIsLoggedIn(true);
+        handleLogin(response.data.user);
         navigate('/dashboard')
       })
-      .catch(function (error) {
-        console.log(error);
+      .catch(function (err) {
+        console.log(err);
       });
 
     } else {
@@ -44,11 +42,10 @@ const AuthPage = () => {
 
       })
       .then(function (response) {
-        console.log(response);
         setIsLogin(true);
       })
-      .catch(function (error) {
-        console.log(error);
+      .catch(function (err) {
+        console.log(err);
       });
 
     }

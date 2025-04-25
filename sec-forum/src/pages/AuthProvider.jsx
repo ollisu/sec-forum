@@ -1,34 +1,102 @@
-import React, { useContext, createContext, useState} from 'react'
+import React, { useContext, createContext, useState, useEffect} from 'react'
 
 const AuthContext = createContext();
 
-const excryptData = (data) => {
+const encryptData = async (data) => {
     const key = import.meta.env.VITE_SECRET_KEY;
     const encodedData = new TextEncoder().encode(data);
 
-    return window.crypto.subtle.digest('SHA-256', new TextEncoder.encode(key))
-    .then(hash => window.crypto.subtle.importKey('raw', hash, { name: 'AES-GCM' }, false, ['encrypt']))
-    .then(cryptoKey => window.crypto.subtle.encrypt({ name: 'AES-GCM', iv: new Uint8Array(12) }, cryptoKey, encodedData))
-    .then(encryptedData => btoa(String.fromCharCode(...new Uint8Array(encryptedData))));
-    
+    // Hash the secret key to derive an AES-GCM key
+    const hash = await window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(key));
+    const cryptoKey = await window.crypto.subtle.importKey('raw', hash, { name: 'AES-GCM' }, false, ['encrypt']);
+
+    // Generate a random IV (12 bytes recommended for AES-GCM)
+    const iv = window.crypto.getRandomValues(new Uint8Array(12));
+
+    // Encrypt
+    const encryptedData = await window.crypto.subtle.encrypt(
+        { name: 'AES-GCM', iv },
+        cryptoKey,
+        encodedData
+    );
+
+    // Combine IV and encrypted data into one buffer
+    const combined = new Uint8Array(iv.length + encryptedData.byteLength);
+    combined.set(iv);
+    combined.set(new Uint8Array(encryptedData), iv.length);
+
+    // Encode to base64
+    return btoa(String.fromCharCode(...combined));
 };
 
-const decryptData = (ciphertext) => {
+
+const decryptData = async (ciphertext) => {
     const key = import.meta.env.VITE_SECRET_KEY;
-    const encryptedData = new Uint8Array(atob(ciphertext).split('').map(char => char.charCodeAt(0)));
 
-    return window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(key))
-    .then(hash => window.crypto.subtle.importKey('raw', hash, { name: 'AES-GCM' }, false, ['decrypt']))
-    .then(cryptoKey => window.crypto.subtle.decrypt({ name: 'AES-GCM', iv: new Uint8Array(12) }, cryptoKey, encryptedData))
-    .then(decryptedData => new TextDecoder().decode(decryptedData));
+    // Decode base64 string to bytes
+    const combined = Uint8Array.from(atob(ciphertext), c => c.charCodeAt(0));
 
+    // Extract IV and encrypted data
+    const iv = combined.slice(0, 12);
+    const encryptedData = combined.slice(12);
+
+    // Hash the key and import it
+    const hash = await window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(key));
+    const cryptoKey = await window.crypto.subtle.importKey('raw', hash, { name: 'AES-GCM' }, false, ['decrypt']);
+
+    // Decrypt
+    const decryptedData = await window.crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv },
+        cryptoKey,
+        encryptedData
+    );
+
+    return new TextDecoder().decode(decryptedData);
 };
-
 export const AuthProvider = ({children}) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [username, setUsername] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            const storedUsername = localStorage.getItem('username');
+            try {
+                if(storedUsername){
+                    const decryptedUsername = await decryptData(storedUsername);
+                    setUsername(decryptedUsername);
+                    setIsLoggedIn(true);
+                }
+                
+            } catch (err) {
+                console.error("Failed to decrypt username:", err);
+                localStorage.removeItem('username');                
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchUser();
+    }, []);
+
+    const handleLogin = async (user) => {
+        setIsLoggedIn(true);
+        setUsername(user.username);
+        try {
+            const encryptedUsername = await encryptData(user.username);
+            localStorage.setItem('username', encryptedUsername);
+        } catch (err) {
+            console.log("Login failed!!")            
+        }
+    }
+
+    const handleLogout = () => {
+        setIsLoggedIn(false);
+        setUsername(null);
+        localStorage.removeItem('username');
+    }
 
     return(
-        <AuthContext.Provider value={{isLoggedIn, setIsLoggedIn}}>
+        <AuthContext.Provider value={{isLoggedIn, setIsLoggedIn, handleLogin, handleLogout, loading, username}}>
             {children}
         </AuthContext.Provider>
     );
