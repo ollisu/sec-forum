@@ -20,12 +20,12 @@ const AuthPage = () => {
     e.preventDefault();
 
     if (isLogin) {
-      axios.post('/auth/login', {
+      axios.post('api/auth/login', {
         username: formData.username,
         password: formData.password,
       }).then(function (response) {
         handleLogin(response.data.user);
-        navigate('/dashboard')
+        navigate('api/dashboard')
       })
       .catch(function (err) {
         console.log(err);
@@ -33,7 +33,7 @@ const AuthPage = () => {
 
     } else {
       // Sign up logic - write to MONGODB
-      axios.post('/auth/signup', {
+      axios.post('api/auth/signup', {
         username: formData.username,
         firstname: formData.firstname,
         lastname: formData.lastname,
