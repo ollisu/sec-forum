@@ -65,5 +65,15 @@ TopicSchema.pre('save', function(next) {
     next();
 });
 
+// Remove fields that should not be returned for the user in reponses.
+TopicSchema.set('toJSON', {
+    transform: (document, returnedObject) => {
+      // Change id key and change type to string.
+      returnedObject.id = returnedObject._id.toString()
+      delete returnedObject._id
+      delete returnedObject.__v
+    }
+  })
+
 
 module.exports = mongoose.model('Topic', TopicSchema)

@@ -1,5 +1,5 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthProvider";
 import axios from "axios";
@@ -19,7 +19,9 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { handleLogout, user } = useAuth();
   const [formData, setFormData] =  useState("");
-  const [error, setError] =  useState(null);
+  const [topics, setTopics] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState({error: null, errorMsg: null});
 
   const onLogout = () => {
     handleLogout();
@@ -35,7 +37,9 @@ const Dashboard = () => {
     e.preventDefault();
     try {
       const response = await axios.post(`/api/topic`, { title: formData, userId: user.id });
-      console.log("Topic added:", response.data);
+      const savedTopic = response.data;
+      console.log("Topic added:", savedTopic);
+      const updatedTopics = topics.push(savedTopic)
     } catch (err) {
       setError("An error occurred while adding the topic.");
       console.error("Error adding topic:", err);
@@ -43,6 +47,37 @@ const Dashboard = () => {
       setFormData("");
     }
   };
+
+  useEffect(() => {
+        const fetchTopics = async () => {
+            try {
+                const resp = await axios.get(`/api/topic`)
+                setTopics(resp.data)
+              
+            } catch (err) {
+                if(err.response) setError(err.response.data.message || "An error occurred while fetching the topic");
+                else setError("Network error or request failed");           
+            } finally{
+                setLoading(false);
+            }
+         }
+  
+          fetchTopics();
+          
+      },[])
+
+
+  
+  if(loading) return <div>Loading...</div>
+  if (error.error) {
+      return (
+        <div>
+          <div style={{ color: 'white', fontWeight: 'bold' }}>
+            Error: {error.errorMsg} {/* Render error message */}
+          </div>
+        </div>
+       );
+    }
 
   return (
     <div
@@ -91,9 +126,9 @@ const Dashboard = () => {
         </button>
   
         <ul style={{ listStyle: "none", padding: 0 }}>
-          {conversationHeaders.map((topic, index) => (
+          {topics.map((topic) => (
             <li
-              key={index}
+              key={topic.id}
               style={{
                 padding: "15px 20px",
                 borderBottom: "1px solid #eee",
@@ -104,7 +139,7 @@ const Dashboard = () => {
                 fontWeight: "500", 
               }}
             >
-              {topic}
+              {topic.title}
             </li>
           ))}
         </ul>
