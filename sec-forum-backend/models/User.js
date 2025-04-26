@@ -33,16 +33,16 @@ lastname:{
     required: true,
     default: 'user'
   },
-  created_at:{
+  createdAt:{
     type: Date,
     required: true,
     immutable: true,
     default: () => Date.now()
   },
-  updated_at:{
+  updatedAt:{
     type: Date,
     required: true,
-    default: Date.now()
+    default: () => Date.now()
   }
 });
 
@@ -50,7 +50,7 @@ UserSchema.pre('save', async function(next) {
     const user = this;
     try {
         if (user.isModified()) {
-            user.updated_at = Date.now();
+            user.updatedAt = Date.now();
           }
       
           if(user.isModified('password')){
@@ -73,6 +73,7 @@ UserSchema.pre('save', async function(next) {
 // Remove fields that should not be returned for the user in reponses.
 UserSchema.set('toJSON', {
     transform: (document, returnedObject) => {
+      // Change id key and change type to string.
       returnedObject.id = returnedObject._id.toString()
       delete returnedObject._id
       delete returnedObject.__v
