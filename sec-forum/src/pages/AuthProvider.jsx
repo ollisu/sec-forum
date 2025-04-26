@@ -4,7 +4,7 @@ const AuthContext = createContext();
 
 const encryptData = async (data) => {
     const key = import.meta.env.VITE_SECRET_KEY;
-    const encodedData = new TextEncoder().encode(data);
+    const encodedData = new TextEncoder().encode(JSON.stringify(data)); // Encrypt the entire user object
 
     // Hash the secret key to derive an AES-GCM key
     const hash = await window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(key));
@@ -51,26 +51,27 @@ const decryptData = async (ciphertext) => {
         encryptedData
     );
 
-    return new TextDecoder().decode(decryptedData);
+    return JSON.parse(new TextDecoder().decode(decryptedData)); // Decrypt and parse as JSON object
 };
+
 export const AuthProvider = ({children}) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [username, setUsername] = useState(null);
+    const [user, setUser]= useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchUser = async () => {
-            const storedUsername = localStorage.getItem('username');
+            const storedUser = localStorage.getItem('user');
             try {
-                if(storedUsername){
-                    const decryptedUsername = await decryptData(storedUsername);
-                    setUsername(decryptedUsername);
+                if(storedUser){
+                    const decryptedUser  = await decryptData(storedUser);
+                    setUser(decryptedUser);
                     setIsLoggedIn(true);
                 }
                 
             } catch (err) {
-                console.error("Failed to decrypt username:", err);
-                localStorage.removeItem('username');                
+                console.error("Failed to decrypt user:", err);
+                localStorage.removeItem('user');                
             } finally {
                 setLoading(false);
             }
@@ -78,12 +79,12 @@ export const AuthProvider = ({children}) => {
         fetchUser();
     }, []);
 
-    const handleLogin = async (user) => {
+    const handleLogin = async (userData) => {
         setIsLoggedIn(true);
-        setUsername(user.username);
+        setUser(userData);
         try {
-            const encryptedUsername = await encryptData(user.username);
-            localStorage.setItem('username', encryptedUsername);
+            const encryptedUser = await encryptData(userData);
+            localStorage.setItem('user', encryptedUser);
         } catch (err) {
             console.log("Login failed!!")            
         }
@@ -92,11 +93,11 @@ export const AuthProvider = ({children}) => {
     const handleLogout = () => {
         setIsLoggedIn(false);
         setUsername(null);
-        localStorage.removeItem('username');
+        localStorage.removeItem('user');
     }
 
     return(
-        <AuthContext.Provider value={{isLoggedIn, setIsLoggedIn, handleLogin, handleLogout, loading, username}}>
+        <AuthContext.Provider value={{isLoggedIn, setIsLoggedIn, handleLogin, handleLogout, loading, user}}>
             {children}
         </AuthContext.Provider>
     );

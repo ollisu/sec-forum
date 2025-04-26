@@ -4,8 +4,6 @@ import { useAuth } from "./AuthProvider";
 import "../styles/AuthPage.css";
 import axios from 'axios';
 
-//axios.defaults.baseURL = import.meta.env.VITE_BASE_URL;
-
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({ username: "", email: "", password: "", firstname: "", lastname: "" });
@@ -25,7 +23,7 @@ const AuthPage = () => {
         password: formData.password,
       }).then(function (response) {
         handleLogin(response.data.user);
-        navigate('api/dashboard')
+        navigate('/dashboard')
       })
       .catch(function (err) {
         console.log(err);
