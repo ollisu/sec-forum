@@ -7,8 +7,7 @@ const TopicPage = () => {
     const { id } = useParams();
     const [topic, setTopic] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState({error: null, errorMsg: null});
-    const baseUrl = import.meta.env.VITE_BASE_URL;
+    const [error, setError] = useState("");
 
     useEffect(() => {
         const fetchTopic = async () => {
@@ -31,32 +30,101 @@ const TopicPage = () => {
 
 
 
-        if(loading) return <div>Loading...</div>
-        if (error) {
-            return (
-              <div>
-                <div style={{ color: 'white', fontWeight: 'bold' }}>
-                  Error: {error} {/* Render error message */}
-                </div>
-              </div>
-            );
-          }
-
-        return(
-            <div>
-                <h1>{topic.title}</h1>
-                <p>{topic.content}</p>
-
-                <ul>
-                    {topic.messages.map(message => (
-                        <li key={message._id}>
-                          <p>{message.content}</p>
-                          <small>{message.postedBy}</small>
-                        </li>
-                    ))}
-                </ul>
+    if (loading) return (
+        <div style={{ 
+          width: "100vw", 
+          minHeight: "100vh", 
+          backgroundColor: "#f4f4f9", 
+          display: "flex", 
+          alignItems: "center", 
+          justifyContent: "center", 
+          fontSize: "1.5rem", 
+          fontFamily: "'Roboto', sans-serif", 
+          color: "#444" 
+        }}>
+          Loading...
+        </div>
+      );
+      
+      if (error) {
+        return (
+          <div style={{ 
+            width: "100vw", 
+            minHeight: "100vh", 
+            backgroundColor: "#f4f4f9", 
+            display: "flex", 
+            alignItems: "center", 
+            justifyContent: "center", 
+            fontFamily: "'Roboto', sans-serif" 
+          }}>
+            <div style={{ 
+              backgroundColor: "#ff4b5c", 
+              padding: "20px 40px", 
+              borderRadius: "8px", 
+              color: "white", 
+              fontWeight: "bold", 
+              boxShadow: "0 4px 12px rgba(0,0,0,0.15)" 
+            }}>
+              Error: {error}
             </div>
-        )
+          </div>
+        );
+      }
+      
+      return (
+        <div style={{
+          width: "100vw",
+          minHeight: "100vh",
+          backgroundColor: "#f4f4f9",
+          padding: "60px 40px",
+          boxSizing: "border-box",
+          fontFamily: "'Roboto', sans-serif"
+        }}>
+          <div style={{
+            maxWidth: "800px",
+            margin: "0 auto",
+            backgroundColor: "#fff",
+            borderRadius: "12px",
+            padding: "40px",
+            boxShadow: "0 4px 20px rgba(0,0,0,0.1)"
+          }}>
+            <h1 style={{
+              fontSize: "2rem",
+              color: "#444",
+              marginBottom: "30px",
+              fontWeight: "500"
+            }}>
+              {topic.title}
+            </h1>
+      
+            <ul style={{ listStyle: "none", padding: 0 }}>
+              {topic.messages.map(message => (
+                <li key={message._id} style={{
+                  backgroundColor: "#f9f9f9",
+                  padding: "20px",
+                  marginBottom: "15px",
+                  borderRadius: "8px",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.05)"
+                }}>
+                  <p style={{
+                    marginBottom: "10px",
+                    fontSize: "1rem",
+                    color: "#333"
+                  }}>
+                    {message.content}
+                  </p>
+                  <small style={{
+                    color: "#888",
+                    fontSize: "0.9rem"
+                  }}>
+                    Posted by: {message.postedBy}
+                  </small>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      );
    
 
 };

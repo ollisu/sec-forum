@@ -4,24 +4,13 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthProvider";
 import axios from "axios";
 
-const conversationHeaders = [
-  "What's on your mind today?",
-  "How do you spend your weekends?",
-  "Any interesting news you've come across?",
-  "What's the latest update from the admin team?",
-  "Any upcoming events we should know about?",
-  "New features added to the forum!",
-  "Tell us a bit about yourself!",
-  "What brings you to this forum?",
-];
-
 const Dashboard = () => {
   const navigate = useNavigate();
   const { handleLogout, user } = useAuth();
   const [formData, setFormData] =  useState("");
   const [topics, setTopics] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState({error: null, errorMsg: null});
+  const [error, setError] = useState("");
 
   const onLogout = () => {
     handleLogout();
@@ -39,7 +28,7 @@ const Dashboard = () => {
       const response = await axios.post(`/api/topic`, { title: formData, userId: user.id });
       const savedTopic = response.data;
       console.log("Topic added:", savedTopic);
-      const updatedTopics = topics.push(savedTopic)
+      topics.push(savedTopic)
     } catch (err) {
       setError("An error occurred while adding the topic.");
       console.error("Error adding topic:", err);
@@ -47,6 +36,10 @@ const Dashboard = () => {
       setFormData("");
     }
   };
+
+  const handleTopicClick = (topicId) => {
+    navigate(`/topic/${topicId}`);
+  }
 
   useEffect(() => {
         const fetchTopics = async () => {
@@ -68,12 +61,28 @@ const Dashboard = () => {
 
 
   
-  if(loading) return <div>Loading...</div>
-  if (error.error) {
+  if (loading) 
+    return (
+      <div style={{ 
+        width: "100vw", 
+        minHeight: "100vh", 
+        backgroundColor: "#f4f4f9", 
+        display: "flex", 
+        alignItems: "center", 
+        justifyContent: "center", 
+        fontSize: "1.5rem", 
+        fontFamily: "'Roboto', sans-serif", 
+        color: "#444" 
+          }}>
+            Loading...
+          </div>
+        );
+
+  if (error) {
       return (
         <div>
           <div style={{ color: 'white', fontWeight: 'bold' }}>
-            Error: {error.errorMsg} {/* Render error message */}
+            Error: {error} {/* Render error message */}
           </div>
         </div>
        );
@@ -129,6 +138,7 @@ const Dashboard = () => {
           {topics.map((topic) => (
             <li
               key={topic.id}
+              onClick={() => handleTopicClick(topic.id)}
               style={{
                 padding: "15px 20px",
                 borderBottom: "1px solid #eee",
