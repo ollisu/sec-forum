@@ -1,13 +1,37 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom"
 import axios from "axios";
-
+import { useAuth } from "./AuthProvider";
 
 const TopicPage = () => {
     const { id } = useParams();
     const [topic, setTopic] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [formData, setFormData] = useState("");
+    const {  user } = useAuth();
+    const handleChange = (e) => {
+      setFormData(e.target.value);
+    };
+
+    // Handle new message submission.
+    const onSubmit = async (e) => {
+      e.preventDefault();
+      try {
+        const response = await axios.post(`/api/topic/message`, { content: formData, userId: user.id, topicId: id });
+        const savedMessage = response.data;
+        console.log("New message added:", savedMessage);
+        setTopic(prevTopic => ({
+          ...prevTopic, messages: [...prevTopic.messages, savedMessage],
+          latestMessageUpdate: savedMessage.updateAt
+        }))
+      } catch (err) {
+        setError("An error occurred while adding the topic.");
+        console.error("Error adding topic:", err);
+      } finally {
+        setFormData("");
+      }
+    };
 
     useEffect(() => {
         const fetchTopic = async () => {
@@ -26,8 +50,6 @@ const TopicPage = () => {
         fetchTopic();
         
     },[id])
-
-
 
 
     if (loading) return (
@@ -122,6 +144,46 @@ const TopicPage = () => {
                 </li>
               ))}
             </ul>
+            <form style={{ display: "flex", flexDirection: "column", gap: "12px", width: "100%", marginTop: "30px", }}>
+          <input
+            type="text"
+            name="title"
+            placeholder="New message..."
+            value={formData}
+            onChange={handleChange}
+            required
+            style={{
+              padding: "12px",
+              fontSize: "1rem",
+              border: "1px solid #ddd",
+              borderRadius: "6px",
+              backgroundColor: "#fff",
+              color: "#333",
+              outline: "none",
+              width: "100%",
+              maxWidth: "600px",
+              transition: "border-color 0.3s ease",
+            }}
+          />
+        </form>
+        <button
+          onClick={onSubmit}
+          style={{
+            backgroundColor: "#ff4b5c",
+            color: "#fff",
+            border: "none",
+            borderRadius: "6px",
+            padding: "12px 24px",
+            fontSize: "1rem",
+            cursor: "pointer",
+            marginTop: "30px",
+            transition: "background-color 0.3s ease",
+          }}
+          onMouseOver={(e) => e.target.style.backgroundColor = "#ff2a3b"}
+          onMouseOut={(e) => e.target.style.backgroundColor = "#ff4b5c"}
+        >
+          Add New Message
+        </button>
           </div>
         </div>
       );

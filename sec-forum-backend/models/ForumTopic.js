@@ -26,7 +26,10 @@ const TopicSchema = new mongoose.Schema({
         default: () => Date.now()
     },
     messages: [{
-        content: String,
+        content: {
+            type: String,
+            required: true,
+        },
         postedBy: {
             type: String,
             ref: 'User',

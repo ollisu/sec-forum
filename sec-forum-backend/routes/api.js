@@ -3,6 +3,7 @@ var router = express.Router();
 var Topic = require("../models/ForumTopic");
 var User = require("../models/User");
 const mongoose = require('mongoose');
+const ForumTopic = require("../models/ForumTopic");
 
 router.get('/topic', async function(req, res, next) {
   try {
@@ -72,4 +73,47 @@ router.get('/topic/:id', async function(req, res, next) {
         next(err);
     }
 });
+
+router.post('/topic/message', async function(req, res, next) {
+  try {
+      const { content, userId, topicId } = req.body;
+
+      // Check if title and userId are provided
+      if (!content) {
+          return res.status(400).json({ error: 'Message cannot be empty!' });
+      }
+
+      if (!userId) {
+          return res.status(400).json({ error: 'User ID is required' });
+      }
+
+      // Optional: Check if the user exists in the database
+      const userExists = await User.findById(userId);
+      if (!userExists) {
+          return res.status(400).json({ error: 'User not found' });
+      }
+
+      // Create a new Topic
+      const topic = await ForumTopic.findById(topicId);
+      if (!topic) {
+        return res.status(400).json({ error: 'Topic not found!' });
+      }
+
+      const newMessage = {
+        content: content,
+        postedBy: userId,
+      }
+
+      topic.messages.push(newMessage);
+      await topic.save();
+
+      // Return the saved topic in the response with status 201 (Created)
+      res.status(201).json(newMessage);
+  } catch (err) {
+      console.error('Error saving topic:', err);
+      next(err);
+  }
+});
+
+
 module.exports = router;
