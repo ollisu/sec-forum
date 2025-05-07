@@ -43,8 +43,13 @@ lastname:{
     type: Date,
     required: true,
     default: () => Date.now()
+  },
+  refreshTokens: {
+    type: [String],
+     default: []
+    },
   }
-});
+);
 
 UserSchema.pre('save', async function(next) {
     const user = this;

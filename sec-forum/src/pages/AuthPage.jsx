@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthProvider";
 import "../styles/AuthPage.css";
-import axios from 'axios';
+import instance from '../api/axios';
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -18,11 +18,11 @@ const AuthPage = () => {
     e.preventDefault();
 
     if (isLogin) {
-      axios.post('api/auth/login', {
+      instance.post('api/auth/login', {
         username: formData.username,
         password: formData.password,
       }).then(function (response) {
-        handleLogin(response.data.user);
+        handleLogin(response.data.accessToken);
         navigate('/dashboard')
       })
       .catch(function (err) {
@@ -31,7 +31,7 @@ const AuthPage = () => {
 
     } else {
       // Sign up logic - write to MONGODB
-      axios.post('api/auth/signup', {
+      instance.post('api/auth/signup', {
         username: formData.username,
         firstname: formData.firstname,
         lastname: formData.lastname,

@@ -1,7 +1,12 @@
 import React, { useContext, createContext, useState, useEffect} from 'react'
+import { jwtDecode } from "jwt-decode";
+import instance from '../api/axios';
 
 const AuthContext = createContext();
 
+// This function encrypts the user data using AES-GCM encryption
+// and returns the encrypted data as a base64 string.
+// Not needed in the final version, but kept for reference.
 const encryptData = async (data) => {
     const key = import.meta.env.VITE_SECRET_KEY;
     const encodedData = new TextEncoder().encode(JSON.stringify(data)); // Encrypt the entire user object
@@ -29,7 +34,9 @@ const encryptData = async (data) => {
     return btoa(String.fromCharCode(...combined));
 };
 
-
+// This function decrypts the encrypted data using AES-GCM decryption
+// and returns the original user data as a JSON object.
+// Not needed in the final version, but kept for reference.
 const decryptData = async (ciphertext) => {
     const key = import.meta.env.VITE_SECRET_KEY;
 
@@ -57,43 +64,53 @@ const decryptData = async (ciphertext) => {
 export const AuthProvider = ({children}) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [user, setUser]= useState(null);
+    const [accessToken, setAccessToken] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchUser = async () => {
-            const storedUser = localStorage.getItem('user');
+        const tryRefreshToken = async () => {
             try {
-                if(storedUser){
-                    const decryptedUser  = await decryptData(storedUser);
-                    setUser(decryptedUser);
-                    setIsLoggedIn(true);
-                }
-                
+                const res = await instance.post('/api/auth/refresh_token');
+                const { accessToken } = res.data;
+                const decoded_user = jwtDecode(accessToken);
+                setUser(decoded_user);
+                setAccessToken(accessToken);
+                setIsLoggedIn(true);                
             } catch (err) {
-                console.error("Failed to decrypt user:", err);
-                localStorage.removeItem('user');                
+                console.error('No valid session found:', err);  
+                setIsLoggedIn(false);
+                setUser(null);
+                setAccessToken(null);            
             } finally {
                 setLoading(false);
             }
         };
-        fetchUser();
+        tryRefreshToken();
     }, []);
 
-    const handleLogin = async (userData) => {
-        setIsLoggedIn(true);
-        setUser(userData);
+    const handleLogin = async (accessToken) => {
         try {
-            const encryptedUser = await encryptData(userData);
-            localStorage.setItem('user', encryptedUser);
+            const decoded_user = jwtDecode(accessToken);
+            setUser(decoded_user);
+            setAccessToken(accessToken);
+            setIsLoggedIn(true);
         } catch (err) {
             console.log("Login failed!!")            
         }
     }
 
-    const handleLogout = () => {
-        setIsLoggedIn(false);
-        setUsername(null);
-        localStorage.removeItem('user');
+    const handleLogout = async() => {
+        try {
+            await instance.post('/api/auth/logout');            
+        } catch (err) {
+            console.error('Logout failed:', err);
+        }
+        finally {
+            setIsLoggedIn(false);
+            setUser(null);
+            setAccessToken(null);   
+            setLoading(false);
+        }
     }
 
     return(
