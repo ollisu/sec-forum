@@ -1,8 +1,10 @@
 import React, { useContext, createContext, useState, useEffect} from 'react'
 import { jwtDecode } from "jwt-decode";
-import instance from '../api/axios';
+import axios from '../api/axios';
+import { useLocation, useNavigate } from "react-router-dom";
 
 const AuthContext = createContext();
+
 
 // This function encrypts the user data using AES-GCM encryption
 // and returns the encrypted data as a base64 string.
@@ -62,15 +64,23 @@ const decryptData = async (ciphertext) => {
 };
 
 export const AuthProvider = ({children}) => {
+
+
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [user, setUser]= useState(null);
     const [accessToken, setAccessToken] = useState(null);
     const [loading, setLoading] = useState(true);
-
+    const location = useLocation();
+    const navigate = useNavigate();
     useEffect(() => {
+
         const tryRefreshToken = async () => {
+            if(location.pathname === '/'){
+                setIsLoggedIn(false);
+                return;
+            }
             try {
-                const res = await instance.post('/api/auth/refresh_token');
+                const res = await axios.post('/auth/refresh_token');
                 const { accessToken } = res.data;
                 const decoded_user = jwtDecode(accessToken);
                 setUser(decoded_user);
@@ -80,7 +90,10 @@ export const AuthProvider = ({children}) => {
                 console.error('No valid session found:', err);  
                 setIsLoggedIn(false);
                 setUser(null);
-                setAccessToken(null);            
+                setAccessToken(null);    
+                if (location.pathname !== '/') {
+                    navigate('/');
+                  }        
             } finally {
                 setLoading(false);
             }
@@ -94,6 +107,7 @@ export const AuthProvider = ({children}) => {
             setUser(decoded_user);
             setAccessToken(accessToken);
             setIsLoggedIn(true);
+            setLoading(false);
         } catch (err) {
             console.log("Login failed!!")            
         }
@@ -101,7 +115,7 @@ export const AuthProvider = ({children}) => {
 
     const handleLogout = async() => {
         try {
-            await instance.post('/api/auth/logout');            
+            await axios.post('/auth/logout');            
         } catch (err) {
             console.error('Logout failed:', err);
         }
@@ -110,6 +124,7 @@ export const AuthProvider = ({children}) => {
             setUser(null);
             setAccessToken(null);   
             setLoading(false);
+            navigate('/');
         }
     }
 

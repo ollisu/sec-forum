@@ -32,7 +32,7 @@ instance.interceptors.response.use(
         if (error.response?.status === 401 && !error.config._retry) {
             error.config._retry = true;
             try {
-                const res = await instance.get('/api/auth/refresh_token');
+                const res = await instance.post('/auth/refresh_token');
                 const { accessToken: newAccessToken } = res.data;
                 setAccessToken(newAccessToken);
                 // Update the original request with the new access token.

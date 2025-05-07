@@ -53,7 +53,6 @@ router.post("/login", async (req, res) => {
     if(!user){
       return res.status(400).json({error: 'Unable to log in with given username!'})
     }
-    
     const correctPassword = await bcrypt.compare(req.body.password + process.env.PEPPER, user.password);
 
     if(!correctPassword) return res.status(400).json({error: 'Invalid password!'})
@@ -61,7 +60,7 @@ router.post("/login", async (req, res) => {
     // Generate a unique identifier (jti) for the refresh token.
     const jti = uuidv4(); // Generate a unique identifier (UUID v4)
 
-    const accessToken = createToken(user);
+    const accessToken = createAccessToken(user);
     const refreshToken = createRefreshToken(user, jti);
 
     // Check if the user has reached the maximum number of refresh tokens.
