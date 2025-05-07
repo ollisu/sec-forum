@@ -1,6 +1,7 @@
+import React from "react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom"
-import axios from "axios";
+import axios from "../api/axios";
 import { useAuth } from "./AuthProvider";
 
 const TopicPage = () => {
@@ -18,7 +19,7 @@ const TopicPage = () => {
     const onSubmit = async (e) => {
       e.preventDefault();
       try {
-        const response = await axios.post(`/api/topic/message`, { content: formData, userId: user.id, topicId: id });
+        const response = await axios.post(`/topic/message`, { content: formData, userId: user.id, topicId: id });
         const savedMessage = response.data;
         console.log("New message added:", savedMessage);
         setTopic(prevTopic => ({
@@ -36,7 +37,7 @@ const TopicPage = () => {
     useEffect(() => {
         const fetchTopic = async () => {
             try {
-                const resp = await axios.get(`/api/topic/${id}`)
+                const resp = await axios.get(`/topic/${id}`)
                 setTopic(resp.data)
                 
             } catch (err) {

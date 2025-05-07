@@ -76,6 +76,7 @@ export const AuthProvider = ({children}) => {
 
         const tryRefreshToken = async () => {
             if(location.pathname === '/'){
+                console.log("No need to refresh token on the home page")
                 setIsLoggedIn(false);
                 return;
             }

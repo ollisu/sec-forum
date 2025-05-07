@@ -93,26 +93,36 @@ router.post("/login", async (req, res) => {
 });
 
 router.post("/refresh_token", async (req, res) => {
+  console.log("req body");
+  console.log(req.body);
+  console.log("req cookies");
+  console.log(req.cookies); // Check if the cookie is being sent correctly.
+  console.log("Refresh route called 1.");
   const refreshToken = req.cookies.refreshToken;
   if(!refreshToken) return res.sendStatus(401);
 
   // Check if the refresh token is in the database.
   try {
     const decoded_jwt = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET);
+    console.log("Decoded JWT:", decoded_jwt);
     const user = await User.findById(decoded_jwt.id);
-    
     // Check if the user exists and if the refresh token is in the user's list of refresh tokens.
     // If not, send a 403 Forbidden status.
     if(!user) return res.status(403).json({error: 'User not found!'});
+    console.log("User found:", user.username);
 
     const hashedJti = hashJti(decoded_jwt.jti);
+    console.log("hashedJti:", hashedJti);
     if(!user.refreshTokens.includes(hashedJti)){
+      console.log("Invalid refresh token! Possibly reused!");
       // Token reused or invalidated, so remove it from the user's list of refresh tokens.
       // This is a security measure to prevent token reuse attacks.
       user.refreshTokens = [];
       await user.save();
       return res.status(403).json({error: 'Invalid refresh token! Possibly reused!'});
     } 
+
+    console.log("Refresh token is valid.");
     // If the old refresh token is valid, create a refresh token.
     // Refresh tokens are being rotated, so the old refresh token is invalidated and a new one is created.
     const newJti = uuidv4(); // Generate a new unique identifier (UUID v4) and hash it.
@@ -136,9 +146,9 @@ router.post("/refresh_token", async (req, res) => {
       path:"/api/auth/refresh_token",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days.
     }).json({accessToken: newAccessToken});
-    
   } catch (err) {
-    return res.sendStatus(403);
+    console.log("JWT Verification Failed:", err);
+    return res.status(403).json({error: 'Invalid refresh token tits!'});
   }
 })
 
