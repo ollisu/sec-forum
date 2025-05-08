@@ -5,66 +5,69 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-
 jobs:
   snyk-backend:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Cache Node Modules (Backend)
-        uses: actions/cache@v3
-        with:
-          path: sec-forum-backend/node_modules
-          key: backend-node-modules-${{ hashFiles('sec-forum-backend/package-lock.json') }}
-          restore-keys: |
-            backend-node-modules-
+        uses: actions/checkout@v2
+
+      # Snyk Test for Backend
       - name: Run Snyk vulnerability scan on backend
-        uses: snyk/actions@master
-        with:
-          args: test sec-forum-backend --file=sec-forum-backend/package-lock.json
+        uses: snyk/actions/node@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: test
+          args: sec-forum-backend
+
+      # Snyk Monitor for Backend
       - name: Monitor backend project with Snyk
-        uses: snyk/actions@master
-        with:
-          args: monitor sec-forum-backend --file=sec-forum-backend/package-lock.json
+        uses: snyk/actions/node@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: monitor
+          args: sec-forum-backend
+
+      # Snyk Code Test for Backend
       - name: Run Snyk Code test on backend
-        uses: snyk/actions@master
-        with:
-          args: code test sec-forum-backend
+        uses: snyk/actions/node@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: code test
+          args: sec-forum-backend
 
   snyk-frontend:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Cache Node Modules (Frontend)
-        uses: actions/cache@v3
-        with:
-          path: sec-forum-frontend/node_modules
-          key: frontend-node-modules-${{ hashFiles('sec-forum-frontend/package-lock.json') }}
-          restore-keys: |
-            frontend-node-modules-
+        uses: actions/checkout@v2
+
+      # Snyk Test for Frontend
       - name: Run Snyk vulnerability scan on frontend
-        uses: snyk/actions@master
-        with:
-          args: test sec-forum-frontend --file=sec-forum-frontend/package-lock.json
+        uses: snyk/actions/node@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: test
+          args: sec-forum-frontend
+
+      # Snyk Monitor for Frontend
       - name: Monitor frontend project with Snyk
-        uses: snyk/actions@master
-        with:
-          args: monitor sec-forum-frontend --file=sec-forum-frontend/package-lock.json
+        uses: snyk/actions/node@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: monitor
+          args: sec-forum-frontend
+
+      # Snyk Code Test for Frontend
       - name: Run Snyk Code test on frontend
-        uses: snyk/actions@master
-        with:
-          args: code test sec-forum-frontend
+        uses: snyk/actions/node@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: code test
+          args: sec-forum-frontend
