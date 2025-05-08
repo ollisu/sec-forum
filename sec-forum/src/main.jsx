@@ -10,8 +10,9 @@ import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <AuthProvider>
+
     <Router>
+    <AuthProvider>
       <Routes>
         <Route path="/" element={<AuthPage />} />
         <Route element={<PrivateRoute />}>
@@ -21,7 +22,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           <Route path="/topic/:id" element={<TopicPage />} />
         </Route>
       </Routes>
+      </AuthProvider>
     </Router>
-    </AuthProvider>
+
   </React.StrictMode>
 );
