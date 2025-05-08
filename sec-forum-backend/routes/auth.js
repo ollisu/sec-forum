@@ -7,13 +7,15 @@ const jwt = require('jsonwebtoken');
 const { create } = require('../models/ForumTopic');
 const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
+const _ = require('lodash');
+
 
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_SECRET;
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_SECRET;
-const MAX_SESSION_CNT = process.env.MAX_SESSION_CNT;
+const MAX_REFRESH_TOKENS = process.env.MAX_REFRESH_TOKENS;
 
 const sessionLimitHit = (user) => {
-  return user.refreshTokens.length >= MAX_SESSION_CNT; // Limit to 5 refresh tokens per user.
+  return user.refreshTokens.length >= MAX_REFRESH_TOKENS; // Limit to 5 refresh tokens per user.
 }
   
 const hashJti = (jti) => {
@@ -92,27 +94,21 @@ router.post("/login", async (req, res) => {
 
 });
 
-router.post("/refresh_token", async (req, res) => {
-  console.log("req body");
-  console.log(req.body);
-  console.log("req cookies");
-  console.log(req.cookies); // Check if the cookie is being sent correctly.
-  console.log("Refresh route called 1.");
+router.post("/refresh_token", _.throttle(async (req, res) => {
+
   const refreshToken = req.cookies.refreshToken;
   if(!refreshToken) return res.sendStatus(401);
 
   // Check if the refresh token is in the database.
   try {
     const decoded_jwt = jwt.verify(refreshToken, REFRESH_TOKEN_SECRET);
-    console.log("Decoded JWT:", decoded_jwt);
     const user = await User.findById(decoded_jwt.id);
     // Check if the user exists and if the refresh token is in the user's list of refresh tokens.
     // If not, send a 403 Forbidden status.
     if(!user) return res.status(403).json({error: 'User not found!'});
-    console.log("User found:", user.username);
 
     const hashedJti = hashJti(decoded_jwt.jti);
-    console.log("hashedJti:", hashedJti);
+
     if(!user.refreshTokens.includes(hashedJti)){
       console.log("Invalid refresh token! Possibly reused!");
       // Token reused or invalidated, so remove it from the user's list of refresh tokens.
@@ -122,7 +118,6 @@ router.post("/refresh_token", async (req, res) => {
       return res.status(403).json({error: 'Invalid refresh token! Possibly reused!'});
     } 
 
-    console.log("Refresh token is valid.");
     // If the old refresh token is valid, create a refresh token.
     // Refresh tokens are being rotated, so the old refresh token is invalidated and a new one is created.
     const newJti = uuidv4(); // Generate a new unique identifier (UUID v4) and hash it.
@@ -147,10 +142,9 @@ router.post("/refresh_token", async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days.
     }).json({accessToken: newAccessToken});
   } catch (err) {
-    console.log("JWT Verification Failed:", err);
     return res.status(403).json({error: 'Invalid refresh token tits!'});
   }
-})
+}, 1000))
 
 router.post("/logout", async (req, res) => {
   const refreshToken = req.cookies.refreshToken;
