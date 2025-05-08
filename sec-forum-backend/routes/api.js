@@ -52,7 +52,7 @@ router.get('/topic/:id', async function(req, res, next) {
         }
 
         // Optional: Check if the user exists in the database
-        const userExists = await User.findById(userId);
+        const userExists = await User.findById({ _id: {$eq: userId} });
         if (!userExists) {
             return res.status(400).json({ error: 'User not found' });
         }
@@ -88,17 +88,19 @@ router.post('/topic/message', async function(req, res, next) {
       }
 
       // Optional: Check if the user exists in the database
-      const userExists = await User.findById(userId);
+      const userExists = await User.findById({ _id: { $eq: userId } });
       if (!userExists) {
           return res.status(400).json({ error: 'User not found' });
       }
 
-      // Create a new Topic
-      const topic = await ForumTopic.findById(topicId);
+      // Find the topic by ID and check if it exists
+      const topic = await ForumTopic.findById({ _id: {$eq: topicId } });
       if (!topic) {
         return res.status(400).json({ error: 'Topic not found!' });
       }
-
+      
+      // Create a new message object
+      // and push it to the topic's messages array.
       const newMessage = {
         content: content,
         postedBy: userId,

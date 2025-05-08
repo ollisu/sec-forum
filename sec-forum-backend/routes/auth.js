@@ -51,7 +51,7 @@ router.post("/signup", async (req, res) => {
 // ROUTE 2:
 router.post("/login", async (req, res) => {
   try {
-    let user = await User.findOne({ username: req.body.username});
+    let user = await User.findOne({ username: {$eq: req.body.username}});
     if(!user){
       return res.status(400).json({error: 'Unable to log in with given username!'})
     }
