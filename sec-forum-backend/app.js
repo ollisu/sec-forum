@@ -8,18 +8,44 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var authRouter = require('./routes/auth');
 var apiRouter = require('./routes/api');
-const csrf = require('lusca').csrf;
+var csrf = require('lusca').csrf;
+var rateLimit = require('express-rate-limit');
+var session = require('express-session');
 const { version } = require('os');
 var { connectToDatabase } = require('./db'); // Import the MongoDB connection module
 
 var app = express();
 
+// set up rate limiter: maximum of five requests per minute
 
+var limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 500, // max 100 requests per windowMs
+});
+// apply to all requests
+app.use(limiter);
+
+// TODO - Add csrf protection.
+/** 
+// Use sessions (required for Lusca)
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'your_default_secret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+    httpOnly: true,
+    sameSite: 'strict',
+  }
+}));
+// CSRF protection
+app.use(csrf());
+*/
 // MongoDB connection setup
 connectToDatabase().catch(console.dir);
 
 app.use(helmet()); // Use Helmet for security
-app.use(csrf());
+
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

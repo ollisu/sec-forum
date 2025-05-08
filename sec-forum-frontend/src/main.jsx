@@ -9,7 +9,7 @@ import TopicPage from "./pages/TopicPage";
 import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
+  //<React.StrictMode>
 
     <Router>
     <AuthProvider>
@@ -25,5 +25,5 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       </AuthProvider>
     </Router>
 
-  </React.StrictMode>
+ // </React.StrictMode>
 );

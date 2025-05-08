@@ -4,8 +4,9 @@ var Topic = require("../models/ForumTopic");
 var User = require("../models/User");
 const mongoose = require('mongoose');
 const ForumTopic = require("../models/ForumTopic");
+const { verifyToken, requireType } = require("../middlewares/auth");
 
-router.get('/topic', async function(req, res, next) {
+router.get('/topic', verifyToken, async function(req, res, next) {
   try {
     const topics = await Topic.find({});
     res.json(topics);
@@ -51,8 +52,16 @@ router.get('/topic/:id', async function(req, res, next) {
             return res.status(400).json({ error: 'User ID is required' });
         }
 
+            // Check if the provided ID is a valid ObjectId format
+        
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+          const error = new Error('Invalid ID format');
+          error.status = 400;
+          return next(error);
+        }
+
         // Optional: Check if the user exists in the database
-        const userExists = await User.findById({ _id: {$eq: userId} });
+        const userExists = await User.findById({ _id: userId });
         if (!userExists) {
             return res.status(400).json({ error: 'User not found' });
         }
@@ -87,14 +96,27 @@ router.post('/topic/message', async function(req, res, next) {
           return res.status(400).json({ error: 'User ID is required' });
       }
 
+      if (!mongoose.Types.ObjectId.isValid(userId)) {
+        const error = new Error('Invalid ID format');
+        error.status = 400;
+        return next(error);
+      }
+
       // Optional: Check if the user exists in the database
-      const userExists = await User.findById({ _id: { $eq: userId } });
+      const userExists = await User.findById({ _id: userId });
       if (!userExists) {
           return res.status(400).json({ error: 'User not found' });
       }
 
+      // Check if  valid topicId is provided
+      if (!mongoose.Types.ObjectId.isValid(topicId)) {
+        const error = new Error('Invalid ID format for a topic!');
+        error.status = 400;
+        return next(error);
+      }
+      // Check if the provided ID is a valid ObjectId format
       // Find the topic by ID and check if it exists
-      const topic = await ForumTopic.findById({ _id: {$eq: topicId } });
+      const topic = await ForumTopic.findById({ _id: topicId });
       if (!topic) {
         return res.status(400).json({ error: 'Topic not found!' });
       }

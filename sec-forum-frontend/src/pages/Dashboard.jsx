@@ -2,7 +2,7 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthProvider";
-import axios from "axios";
+import axios from '../api/axios';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ const Dashboard = () => {
   const onSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(`/api/topic`, { title: formData, userId: user.id });
+      const response = await axios.post(`/topic`, { title: formData, userId: user.id });
       const savedTopic = response.data;
       console.log("Topic added:", savedTopic);
       topics.push(savedTopic)
@@ -44,7 +44,7 @@ const Dashboard = () => {
   useEffect(() => {
         const fetchTopics = async () => {
             try {
-                const resp = await axios.get(`/api/topic`)
+                const resp = await axios.get(`/topic`)
                 setTopics(resp.data)
               
             } catch (err) {
