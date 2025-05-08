@@ -1,0 +1,21 @@
+name: Security Checks
+on: push:
+  branches: [ main ]
+jobs:
+  snyk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Run Snyk vulnerability scan on backend
+        uses: snyk/actions@master
+        with:
+          project-directory: sec-forum-backend
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      - name: Run Snyk vulnerability scan on frontend
+        uses: snyk/actions@master
+        with:
+          project-directory: sec-forum
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
