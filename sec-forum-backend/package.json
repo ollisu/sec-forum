@@ -6,12 +6,14 @@
     "start": "node ./bin/www"
   },
   "dependencies": {
+    "@mapbox/node-pre-gyp": "^2.0.0",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^3.0.2",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "glob": "^11.0.2",
     "http-errors": "~1.6.3",
     "jade": "^0.29.0",
     "jsonwebtoken": "^9.0.2",
@@ -19,6 +21,12 @@
     "mongodb": "^6.15.0",
     "mongoose": "^8.13.2",
     "morgan": "~1.9.1",
+    "rimraf": "^6.0.1",
     "uuid": "^11.1.0"
-  }
+  },
+
+    "overrides": {
+      "glob": "^11.0.2"             
+    }
+  
 }
