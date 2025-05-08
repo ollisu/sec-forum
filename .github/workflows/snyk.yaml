@@ -23,13 +23,13 @@ jobs:
       - name: Run Snyk vulnerability scan on frontend
         uses: snyk/actions@master
         with:
-          args: test sec-forum
+          args: test sec-forum-frontend
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       - name: Monitor frontend project with Snyk
         uses: snyk/actions@master
         with:
-          args: monitor sec-forum
+          args: monitor sec-forum-frontend
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       - name: Run Snyk Code test on backend
@@ -41,6 +41,6 @@ jobs:
       - name: Run Snyk Code test on frontend
         uses: snyk/actions@master
         with:
-          args: code test sec-forum
+          args: code test sec-forum-frontend
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
