@@ -7,40 +7,40 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Run Snyk vulnerability scan on backend
         uses: snyk/actions@master
         with:
-          args: test backend
+          args: test sec-forum-backend
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       - name: Monitor backend project with Snyk
         uses: snyk/actions@master
         with:
-          args: monitor backend
+          args: monitor sec-forum-backend
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       - name: Run Snyk vulnerability scan on frontend
         uses: snyk/actions@master
         with:
-          args: test frontend
+          args: test sec-forum
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       - name: Monitor frontend project with Snyk
         uses: snyk/actions@master
         with:
-          args: monitor frontend
+          args: monitor sec-forum
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       - name: Run Snyk Code test on backend
         uses: snyk/actions@master
         with:
-          args: code test backend
+          args: code test sec-forum-backend
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       - name: Run Snyk Code test on frontend
         uses: snyk/actions@master
         with:
-          args: code test frontend
+          args: code test sec-forum
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
