@@ -19,6 +19,7 @@
     "jade": "^0.29.0",
     "jsonwebtoken": "^9.0.2",
     "lodash": "^4.17.21",
+    "lusca": "^1.7.0",
     "mongodb": "^6.15.0",
     "mongoose": "^8.13.2",
     "morgan": "~1.9.1",

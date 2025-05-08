@@ -8,6 +8,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var authRouter = require('./routes/auth');
 var apiRouter = require('./routes/api');
+const csrf = require('lusca').csrf;
 const { version } = require('os');
 var { connectToDatabase } = require('./db'); // Import the MongoDB connection module
 
@@ -18,6 +19,7 @@ var app = express();
 connectToDatabase().catch(console.dir);
 
 app.use(helmet()); // Use Helmet for security
+app.use(csrf());
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
