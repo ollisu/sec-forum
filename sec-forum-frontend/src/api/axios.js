@@ -6,9 +6,13 @@ const instance = axios.create({
 });
 
 let accessToken = null;
-const setAccessToken = (token) => {
+export const setAccessToken = (token) => {
   accessToken = token;
 };
+
+export const clearAccessToken = () => {
+    accessToken = null;
+  };
 
 
 // Set the access token in the axios instance headers for all requests
@@ -48,4 +52,4 @@ instance.interceptors.response.use(
 
 );
 
-export default instance;    
+export default instance;

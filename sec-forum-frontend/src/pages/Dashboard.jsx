@@ -44,6 +44,7 @@ const Dashboard = () => {
   useEffect(() => {
         const fetchTopics = async () => {
             try {
+              console.log("Fetching topics...");
                 const resp = await axios.get(`/topic`)
                 setTopics(resp.data)
               
