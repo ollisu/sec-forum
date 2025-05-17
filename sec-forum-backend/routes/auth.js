@@ -8,7 +8,7 @@ const { create } = require('../models/ForumTopic');
 const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
 const _ = require('lodash');
-
+const { verifyToken, requireType } = require("../middlewares/auth");
 
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_SECRET;
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_SECRET;
@@ -81,7 +81,7 @@ router.post("/login", async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      path:"/api/auth/refresh_token",
+      path:"/api/auth",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days.
     }).json({accessToken});
 
@@ -138,7 +138,7 @@ router.post("/refresh_token", _.throttle(async (req, res) => {
       httpOnly: true, // Set the cookie to HTTP-only to prevent client-side access (document.cookie).
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      path:"/api/auth/refresh_token",
+      path:"/api/auth",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days.
     }).json({accessToken: newAccessToken});
   } catch (err) {
@@ -155,20 +155,20 @@ router.post("/logout", async (req, res) => {
     const user = await User.findById(decoded_jwt.id);
 
     if(user){
-      const hashedJti = hashJti(decoded.jti);
+      const hashedJti = hashJti(decoded_jwt.jti);
       user.refreshTokens = user.refreshTokens.filter(jti => jti !== hashedJti); // Remove the refresh token jti from the user's list of refresh tokens.
       await user.save();
     }
   }catch (err) {
     console.error(err); 
   }
-
+  
   res.clearCookie("refreshToken", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
-    path:"/api/auth/refresh_token",
-  }).sendStatus(200); // No content.
+    path:"/api/auth",
+  }).status(200).json({ message: "Logout successful!" });
 });
 
 module.exports = router;

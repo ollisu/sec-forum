@@ -1,6 +1,6 @@
 import React, { useContext, createContext, useState, useEffect} from 'react'
 import { jwtDecode } from "jwt-decode";
-import axios from '../api/axios';
+import axios, { setAccessToken, clearAccessToken } from '../api/axios';
 import { useLocation, useNavigate } from "react-router-dom";
 
 const AuthContext = createContext();
@@ -68,7 +68,6 @@ export const AuthProvider = ({children}) => {
 
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [user, setUser]= useState(null);
-    const [accessToken, setAccessToken] = useState(null);
     const [loading, setLoading] = useState(true);
     const location = useLocation();
     const navigate = useNavigate();
@@ -83,15 +82,17 @@ export const AuthProvider = ({children}) => {
             try {
                 const res = await axios.post('/auth/refresh_token');
                 const { accessToken } = res.data;
+
+                setAccessToken(accessToken); // Set the access token in the axios instance for future requests.
+
                 const decoded_user = jwtDecode(accessToken);
                 setUser(decoded_user);
-                setAccessToken(accessToken);
                 setIsLoggedIn(true);                
             } catch (err) {
                 console.error('No valid session found:', err);  
                 setIsLoggedIn(false);
                 setUser(null);
-                setAccessToken(null);    
+                clearAccessToken(); // Clear the access token in the axios instance.
                 if (location.pathname !== '/') {
                     navigate('/');
                   }        
@@ -104,9 +105,11 @@ export const AuthProvider = ({children}) => {
 
     const handleLogin = async (accessToken) => {
         try {
+
+            setAccessToken(accessToken); // Set the access token in the axios instance for future requests.
+
             const decoded_user = jwtDecode(accessToken);
             setUser(decoded_user);
-            setAccessToken(accessToken);
             setIsLoggedIn(true);
             setLoading(false);
         } catch (err) {
@@ -116,17 +119,17 @@ export const AuthProvider = ({children}) => {
 
     const handleLogout = async() => {
         try {
-            await axios.post('/auth/logout');            
+            await axios.post('/auth/logout', {skipInterceptor: true});            
         } catch (err) {
             console.error('Logout failed:', err);
         }
         finally {
             setIsLoggedIn(false);
             setUser(null);
-            setAccessToken(null);   
+            clearAccessToken(); // Clear the access token in the axios instance.
             setLoading(false);
             navigate('/');
-        }
+        }            
     }
 
     return(
