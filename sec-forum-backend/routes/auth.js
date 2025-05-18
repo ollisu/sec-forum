@@ -9,6 +9,8 @@ const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
 const _ = require('lodash');
 const { verifyToken, requireType } = require("../middlewares/auth");
+const rateLimit = require('express-rate-limit');
+
 
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_SECRET;
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_SECRET;
@@ -24,6 +26,16 @@ const hashJti = (jti) => {
 
 const createAccessToken = (user) => jwt.sign({ id: user.id, username: user.username, role: user.type }, ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
 const createRefreshToken = (user, jti) => jwt.sign({ id: user.id, username: user.username, role: user.type  }, REFRESH_TOKEN_SECRET, { expiresIn: '7d', jwtid: jti });
+
+const loginRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // Limit each IP to 10 requests per windowMs
+  message: "Too many login (more than 10) attempts, please try again later.",
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  skipSuccessfulRequests: true, // Skip successful requests
+  skipFailedRequests: false, // Do not skip failed requests
+})
 
 
 // ROUTE 1:
@@ -49,7 +61,7 @@ router.post("/signup", async (req, res) => {
 });
 
 // ROUTE 2:
-router.post("/login", async (req, res) => {
+router.post("/login",loginRateLimiter, async (req, res) => {
   try {
     let user = await User.findOne({ username: {$eq: req.body.username}});
     if(!user){
@@ -94,7 +106,7 @@ router.post("/login", async (req, res) => {
 
 });
 
-router.post("/refresh_token", _.throttle(async (req, res) => {
+router.post("/refresh_token", async (req, res) => {
 
   const refreshToken = req.cookies.refreshToken;
   if(!refreshToken) return res.sendStatus(401);
@@ -144,7 +156,7 @@ router.post("/refresh_token", _.throttle(async (req, res) => {
   } catch (err) {
     return res.status(403).json({error: 'Invalid refresh token tits!'});
   }
-}, 1000))
+})
 
 router.post("/logout", async (req, res) => {
   const refreshToken = req.cookies.refreshToken;
