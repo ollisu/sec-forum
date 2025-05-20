@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthProvider";
 import axios from '../api/axios';
+import { Link } from "react-router-dom";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -211,6 +212,13 @@ const Dashboard = () => {
         >
           Add New Topic
         </button>
+        
+        {user.role === "admin" ?
+        <div style={{ marginTop: "30px", fontSize: "1.2rem", color: "#444", fontFamily: "'Roboto', sans-serif", fontWeight: "500", }}>
+          <Link to="/users">Admin Portal - Manage users</Link>
+        </div>
+        : <></>}
+
       </div>
       
     </div>

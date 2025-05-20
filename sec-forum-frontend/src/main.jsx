@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard";
 import { AuthProvider } from "./pages/AuthProvider";
 import PrivateRoute from "./pages/PrivateRoute";
 import TopicPage from "./pages/TopicPage";
+import Users from "./pages/Users";
 import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
@@ -20,6 +21,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         </Route>
         <Route element={<PrivateRoute />}>
           <Route path="/topic/:id" element={<TopicPage />} />
+        </Route>
+        <Route element={<PrivateRoute />}>
+          <Route path="/users" element={<Users />} />
         </Route>
       </Routes>
       </AuthProvider>
