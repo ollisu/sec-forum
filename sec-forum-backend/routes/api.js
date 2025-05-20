@@ -85,7 +85,8 @@ router.get('/topic/:id', async function(req, res, next) {
 
 router.post('/topic/message', async function(req, res, next) {
   try {
-      const { content, userId, topicId } = req.body;
+      const { content, userId, username, topicId } = req.body;
+      console.log("username at backend", username);
 
       // Check if title and userId are provided
       if (!content) {
@@ -126,6 +127,7 @@ router.post('/topic/message', async function(req, res, next) {
       const newMessage = {
         content: content,
         postedBy: userId,
+        postedByName: username,
       }
 
       topic.messages.push(newMessage);

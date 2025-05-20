@@ -35,6 +35,10 @@ const TopicSchema = new mongoose.Schema({
             ref: 'User',
             immutable: true
         },
+        postedByName: {
+            type: String,
+            required: true,
+        },
         postedAt:{
             type: Date,
             default: () => Date.now(),

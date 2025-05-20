@@ -25,6 +25,12 @@ const Dashboard = () => {
   // Handle form submission
   const onSubmit = async (e) => {
     e.preventDefault();
+
+    if (!formData.trim()) {
+      alert("Please enter a topic title.");
+      return;
+    }
+
     try {
       const response = await axios.post(`/topic`, { title: formData, userId: user.id });
       const savedTopic = response.data;
@@ -177,9 +183,9 @@ const Dashboard = () => {
             type="text"
             name="title"
             placeholder="New topic..."
+            required
             value={formData}
             onChange={handleChange}
-            required
             style={{
               padding: "12px",
               fontSize: "1rem",

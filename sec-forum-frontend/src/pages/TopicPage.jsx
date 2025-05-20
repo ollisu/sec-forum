@@ -14,12 +14,18 @@ const TopicPage = () => {
     const handleChange = (e) => {
       setFormData(e.target.value);
     };
-
+console.log(user);
     // Handle new message submission.
     const onSubmit = async (e) => {
       e.preventDefault();
+
+      if (!formData.trim()) {
+        alert("Message can't be empty. Please enter a thoughtful message.");
+      return;
+    }
+
       try {
-        const response = await axios.post(`/topic/message`, { content: formData, userId: user.id, topicId: id });
+        const response = await axios.post(`/topic/message`, { content: formData, userId: user.id, username: user.username, topicId: id });
         const savedMessage = response.data;
         console.log("New message added:", savedMessage);
         setTopic(prevTopic => ({
@@ -140,7 +146,7 @@ const TopicPage = () => {
                     color: "#888",
                     fontSize: "0.9rem"
                   }}>
-                    Posted by: {message.postedBy}
+                    Posted by: {message.postedByName}
                   </small>
                 </li>
               ))}
