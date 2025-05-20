@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthProvider";
 import axios from '../api/axios';
 import { Link } from "react-router-dom";
+import DOMPurify from 'dompurify';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -26,8 +27,10 @@ const Dashboard = () => {
   const onSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.trim()) {
-      alert("Please enter a topic title.");
+    const sanitizedContent = DOMPurify.sanitize(formData);
+    if (!sanitizedContent.trim()) {
+      alert("The topic is either empty or doesn't pass validation. Please enter valid plain text as topic title.");
+      setFormData("");
       return;
     }
 

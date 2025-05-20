@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom"
 import axios from "../api/axios";
 import { useAuth } from "./AuthProvider";
+import DOMPurify from 'dompurify';
 
 const TopicPage = () => {
     const { id } = useParams();
@@ -14,20 +15,21 @@ const TopicPage = () => {
     const handleChange = (e) => {
       setFormData(e.target.value);
     };
-console.log(user);
     // Handle new message submission.
     const onSubmit = async (e) => {
       e.preventDefault();
+      const sanitizedContent = DOMPurify.sanitize(formData);
 
-      if (!formData.trim()) {
-        alert("Message can't be empty. Please enter a thoughtful message.");
+      if (!sanitizedContent.trim()) {
+        alert("Message is either empty or it doesn't pass validation. Please enter a thoughtful plain text message.");
+        setFormData("");
       return;
     }
 
       try {
-        const response = await axios.post(`/topic/message`, { content: formData, userId: user.id, username: user.username, topicId: id });
+        
+        const response = await axios.post(`/topic/message`, { content: sanitizedContent, userId: user.id, username: user.username, topicId: id });
         const savedMessage = response.data;
-        console.log("New message added:", savedMessage);
         setTopic(prevTopic => ({
           ...prevTopic, messages: [...prevTopic.messages, savedMessage],
           latestMessageUpdate: savedMessage.updateAt
