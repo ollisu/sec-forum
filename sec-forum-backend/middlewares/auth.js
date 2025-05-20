@@ -21,7 +21,7 @@ const verifyToken = (req, res, next) => {
 
 // Middleware to require a specific user type (e.g., admin, regular user)
 const requireType = (type) => (req, res, next) => {
-    if (!req.user || req.user.type !== type) {  // Checking for 'type' instead of 'role'
+    if (!req.user || req.user.role !== type) {  // Checking for 'type' instead of 'role'
         return res.status(403).json({ message: "Forbidden: Insufficient permissions" });
     }
     next();
