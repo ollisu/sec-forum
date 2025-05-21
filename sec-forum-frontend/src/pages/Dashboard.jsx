@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthProvider";
 import axios from '../api/axios';
+import { Link } from "react-router-dom";
+import DOMPurify from 'dompurify';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -24,6 +26,14 @@ const Dashboard = () => {
   // Handle form submission
   const onSubmit = async (e) => {
     e.preventDefault();
+
+    const sanitizedContent = DOMPurify.sanitize(formData, { USE_PROFILES: { html: true } });
+    if (!sanitizedContent.trim()) {
+      alert("The topic is either empty or doesn't pass validation. Please enter valid plain text as topic title.");
+      setFormData("");
+      return;
+    }
+
     try {
       const response = await axios.post(`/topic`, { title: formData, userId: user.id });
       const savedTopic = response.data;
@@ -176,9 +186,9 @@ const Dashboard = () => {
             type="text"
             name="title"
             placeholder="New topic..."
+            required
             value={formData}
             onChange={handleChange}
-            required
             style={{
               padding: "12px",
               fontSize: "1rem",
@@ -211,6 +221,13 @@ const Dashboard = () => {
         >
           Add New Topic
         </button>
+        
+        {user.role === "admin" ?
+        <div style={{ marginTop: "30px", fontSize: "1.2rem", color: "#444", fontFamily: "'Roboto', sans-serif", fontWeight: "500", }}>
+          <Link to="/users">Admin Portal - Manage users</Link>
+        </div>
+        : <></>}
+
       </div>
       
     </div>

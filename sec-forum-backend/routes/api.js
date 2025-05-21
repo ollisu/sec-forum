@@ -4,7 +4,11 @@ var Topic = require("../models/ForumTopic");
 var User = require("../models/User");
 const mongoose = require('mongoose');
 const ForumTopic = require("../models/ForumTopic");
-const { verifyToken, requireType } = require("../middlewares/auth");
+const { verifyToken } = require("../middlewares/auth");
+const { validationResult } = require('express-validator');
+const topicValidator = require('../middlewares/topicValidator');
+const messageValidator = require('../middlewares/messageValidator');
+
 
 router.get('/topic', verifyToken, async function(req, res, next) {
   try {
@@ -39,8 +43,12 @@ router.get('/topic/:id', async function(req, res, next) {
     }
   });
 
-  router.post('/topic', async function(req, res, next) {
+  router.post('/topic', topicValidator, async function(req, res, next) {
     try {
+        const validationErrors = validationResult(req);
+        if (!validationErrors.isEmpty()) {
+            return res.status(400).json({ errors: validationErrors.array() });  
+        }
         const { title, userId } = req.body;
 
         // Check if title and userId are provided
@@ -83,9 +91,14 @@ router.get('/topic/:id', async function(req, res, next) {
     }
 });
 
-router.post('/topic/message', async function(req, res, next) {
+router.post('/topic/message', messageValidator, async function(req, res, next) {
   try {
-      const { content, userId, topicId } = req.body;
+
+      const validationErrors = validationResult(req);
+      if (!validationErrors.isEmpty()) {
+          return res.status(400).json({ errors: validationErrors.array() });
+      }
+      const { content, userId, username, topicId } = req.body;
 
       // Check if title and userId are provided
       if (!content) {
@@ -126,6 +139,7 @@ router.post('/topic/message', async function(req, res, next) {
       const newMessage = {
         content: content,
         postedBy: userId,
+        postedByName: username,
       }
 
       topic.messages.push(newMessage);
