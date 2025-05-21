@@ -18,7 +18,7 @@ const TopicPage = () => {
     // Handle new message submission.
     const onSubmit = async (e) => {
       e.preventDefault();
-      const sanitizedContent = DOMPurify.sanitize(formData);
+      const sanitizedContent = DOMPurify.sanitize(formData, { USE_PROFILES: { html: true } });
 
       if (!sanitizedContent.trim()) {
         alert("Message is either empty or it doesn't pass validation. Please enter a thoughtful plain text message.");

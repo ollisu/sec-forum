@@ -27,7 +27,7 @@ const Dashboard = () => {
   const onSubmit = async (e) => {
     e.preventDefault();
 
-    const sanitizedContent = DOMPurify.sanitize(formData);
+    const sanitizedContent = DOMPurify.sanitize(formData, { USE_PROFILES: { html: true } });
     if (!sanitizedContent.trim()) {
       alert("The topic is either empty or doesn't pass validation. Please enter valid plain text as topic title.");
       setFormData("");
