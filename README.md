@@ -18,7 +18,6 @@ A web forum application built using the **MERN stack** (MongoDB, Express.js, Rea
 - **Frontend**: React
 - **Backend**: Node.js + Express.js
 - **Database**: MongoDB
-- **Authentication**: Cookie-based sessions
 
 ## 🚀 Getting Started
 
